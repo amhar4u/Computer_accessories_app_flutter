@@ -1,8 +1,84 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'user/home.dart';
 import 'register.dart';
+import '../services/login_service.dart';  // Import the login service
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
+
+  @override
+  _LoginPageState createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final LoginService _loginService = LoginService(); // Correct instance reference
+
+  bool _isPasswordVisible = false;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkLoginStatus();
+  }
+
+  Future<void> _checkLoginStatus() async {
+    bool isLoggedIn = await _loginService.isLoggedIn();
+    if (isLoggedIn) {
+      _navigateToHome();
+    }
+  }
+
+  Future<void> _login() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    // Make sure your login service returns a boolean or a response map
+    final response = await _loginService.login(
+      _emailController.text.trim(), // Trim extra spaces
+      _passwordController.text,
+    );
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (response != null && response['token'] != null) {
+      // Store token in SharedPreferences
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('token', response['token']);
+
+      _navigateToHome();
+    } else if (response != null && response['error'] != null) {
+      _showErrorMessage(response['error']);
+    } else {
+      _showErrorMessage('Invalid email or password');
+    }
+  }
+
+  void _navigateToHome() {
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) =>  HomePage()),
+    );
+  }
+
+  void _showErrorMessage(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,25 +97,126 @@ class LoginPage extends StatelessWidget {
           child: isSmallScreen
               ? Column(
                   mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    _Logo(),
-                    _FormContent(),
+                  children: [
+                    const _Logo(),
+                    _buildLoginForm(),
                   ],
                 )
               : Container(
                   padding: const EdgeInsets.all(32.0),
                   constraints: const BoxConstraints(maxWidth: 800),
                   child: Row(
-                    children: const [
-                      Expanded(child: _Logo()),
-                      Expanded(
-                        child: Center(child: _FormContent()),
-                      ),
+                    children: [
+                      const Expanded(child: _Logo()),
+                      Expanded(child: Center(child: _buildLoginForm())),
                     ],
                   ),
                 ),
         ),
       ),
+    );
+  }
+
+  Widget _buildLoginForm() {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 10,
+            spreadRadius: 2,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      constraints: const BoxConstraints(maxWidth: 320),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildTextField(Icons.email_outlined, "Email", _emailController),
+            const SizedBox(height: 16),
+            _buildPasswordField(),
+            const SizedBox(height: 16),
+            _buildSignInButton(),
+            const SizedBox(height: 16),
+            _buildSignUpLink(context),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField(IconData icon, String label, TextEditingController controller) {
+    return TextFormField(
+      controller: controller,
+      validator: (value) => value == null || value.isEmpty ? 'Enter $label' : null,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+    );
+  }
+
+  Widget _buildPasswordField() {
+    return TextFormField(
+      controller: _passwordController,
+      validator: (value) => value == null || value.isEmpty ? 'Enter Password' : null,
+      obscureText: !_isPasswordVisible,
+      decoration: InputDecoration(
+        labelText: 'Password',
+        prefixIcon: const Icon(Icons.lock_outline_rounded),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+        suffixIcon: IconButton(
+          icon: Icon(_isPasswordVisible ? Icons.visibility_off : Icons.visibility),
+          onPressed: () {
+            setState(() {
+              _isPasswordVisible = !_isPasswordVisible;
+            });
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSignInButton() {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.all(14),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          backgroundColor: Colors.blue,
+          elevation: 5,
+        ),
+        child: _isLoading
+            ? const CircularProgressIndicator(color: Colors.white)
+            : const Text('Sign in', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+        onPressed: _isLoading ? null : _login,
+      ),
+    );
+  }
+
+  Widget _buildSignUpLink(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Text("Don't have an account? "),
+        GestureDetector(
+          onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const RegisterPage())),
+          child: Text(
+            "Sign Up",
+            style: TextStyle(color: Colors.blue.shade900, fontWeight: FontWeight.bold),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -73,177 +250,6 @@ class _Logo extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 30), // ✅ Added more space before the form
-      ],
-    );
-  }
-}
-
-class _FormContent extends StatefulWidget {
-  const _FormContent({Key? key}) : super(key: key);
-
-  @override
-  State<_FormContent> createState() => __FormContentState();
-}
-
-class __FormContentState extends State<_FormContent> {
-  bool _isPasswordVisible = false;
-  bool _rememberMe = false;
-
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 10,
-            spreadRadius: 2,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
-      constraints: const BoxConstraints(maxWidth: 320),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _buildTextField(Icons.email_outlined, "Email", "Enter your email"),
-            _gap(),
-            _buildPasswordField(),
-            _gap(),
-            CheckboxListTile(
-              value: _rememberMe,
-              onChanged: (value) {
-                if (value == null) return;
-                setState(() {
-                  _rememberMe = value;
-                });
-              },
-              title: const Text('Remember me'),
-              controlAffinity: ListTileControlAffinity.leading,
-              dense: true,
-              contentPadding: const EdgeInsets.all(0),
-            ),
-            _gap(),
-            _buildSignInButton(),
-            _gap(),
-            _buildSignUpLink(context),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _gap() => const SizedBox(height: 16);
-
-  Widget _buildTextField(IconData icon, String label, String hint) {
-    return TextFormField(
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please enter some text';
-        }
-        return null;
-      },
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
-        prefixIcon: Icon(icon),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPasswordField() {
-    return TextFormField(
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please enter your password';
-        }
-        if (value.length < 6) {
-          return 'Password must be at least 6 characters';
-        }
-        return null;
-      },
-      obscureText: !_isPasswordVisible,
-      decoration: InputDecoration(
-        labelText: 'Password',
-        hintText: 'Enter your password',
-        prefixIcon: const Icon(Icons.lock_outline_rounded),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        suffixIcon: IconButton(
-          icon: Icon(_isPasswordVisible
-              ? Icons.visibility_off
-              : Icons.visibility),
-          onPressed: () {
-            setState(() {
-              _isPasswordVisible = !_isPasswordVisible;
-            });
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSignInButton() {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          padding: const EdgeInsets.all(14),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          backgroundColor: Colors.blue,
-          elevation: 5,
-        ),
-        child: const Text(
-          'Sign in',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-        onPressed: () {
-          if (_formKey.currentState?.validate() ?? false) {
-            // Handle sign-in logic
-          }
-        },
-      ),
-    );
-  }
-
-  Widget _buildSignUpLink(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        const Text("Don't have an account? "),
-        GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => const RegisterPage()),
-            );
-          },
-          child: Text(
-            "Sign Up",
-            style: TextStyle(
-              color: Colors.blue.shade900,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
       ],
     );
   }
