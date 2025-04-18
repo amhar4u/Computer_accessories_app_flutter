@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\RegistrationSuccessfulMail;
+use Illuminate\Support\Facades\Validator;
 
 
 class AuthController extends Controller
@@ -30,6 +32,9 @@ class AuthController extends Controller
             'contact' => $request->contact,
             'password' => Hash::make($request->password),
         ]);
+
+         // Send registration email
+        Mail::to($user->email)->send(new RegistrationSuccessfulMail($user));
 
         return response()->json(['message' => 'User registered successfully'], 201);
     }
