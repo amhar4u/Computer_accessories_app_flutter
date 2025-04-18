@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import '../config/config.dart'; // Import the config file
 
 class LoginService {
   static const String baseUrl = 'http://127.0.0.1:8000/api';
@@ -8,7 +9,7 @@ class LoginService {
   Future<Map<String, dynamic>?> login(String email, String password) async {
     try {
         final response = await http.post(
-            Uri.parse('$baseUrl/login'),
+            Uri.parse('${Config.baseUrl}/login'),
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode({'email': email.trim(), 'password': password}),
         );
