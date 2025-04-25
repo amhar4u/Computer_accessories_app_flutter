@@ -36,13 +36,13 @@ class RegistrationSuccessfulMail extends Mailable
 
     /**
      * Get the message content definition.
-     */
-    public function content(): Content
-    {
-        return new Content(
-            view: 'view.name',
-        );
-    }
+    //  */
+    // public function content(): Content
+    // {
+    //     return new Content(
+    //         view: 'emails.registration_successful', // Correct view name
+    //     );
+    // }
 
     public function build()
     {

@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use Exception;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -21,22 +23,36 @@ class AuthController extends Controller
             'contact' => 'required|string|max:15|unique:users',
             'password' => 'required|string|min:6|confirmed',
         ]);
-
+    
         if ($validator->fails()) {
             return response()->json($validator->errors(), 400);
         }
-
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'contact' => $request->contact,
-            'password' => Hash::make($request->password),
-        ]);
-
-         // Send registration email
-        Mail::to($user->email)->send(new RegistrationSuccessfulMail($user));
-
-        return response()->json(['message' => 'User registered successfully'], 201);
+    
+        try {
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'contact' => $request->contact,
+                'password' => Hash::make($request->password),
+            ]);
+    
+            // Send registration email
+            Mail::to($user->email)->send(new RegistrationSuccessfulMail($user));
+    
+            return response()->json(['message' => 'User registered successfully'], 201);
+        } catch (Exception $e) {
+            // Log the error details
+            Log::error('Registration Error: ' . $e->getMessage(), [
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+            ]);
+    
+            // Return a generic error response
+            return response()->json([
+                'error' => 'An error occurred during registration.',
+                'details' => $e->getMessage(), // Optional: Include this for debugging
+            ], 500);
+        }
     }
 
     public function login(Request $request) {

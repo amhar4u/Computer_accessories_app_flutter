@@ -1,6 +1,9 @@
 <?php
 
+use App\Livewire\Admin\AdminDashboard;
+use App\Livewire\Login;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AdminController;
 
 /*
 |--------------------------------------------------------------------------
@@ -13,6 +16,15 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
+// Route::get('/', function () {
+//     return view('welcome');
+// });
+
+Route::get('/',Login::class)->name('login');
+
+Route::middleware(['role:admin'])->group(function () {
+    Route::get('/admin', [AdminController::class, 'index']);
+    Route::get('/admin/dashboard', AdminDashboard::class)->name('admin.dashboard');
 });
+
+
