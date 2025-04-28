@@ -37,7 +37,7 @@ class AuthController extends Controller
             ]);
     
             // Send registration email
-            Mail::to($user->email)->send(new RegistrationSuccessfulMail($user));
+            // Mail::to($user->email)->send(new RegistrationSuccessfulMail($user));
     
             return response()->json(['message' => 'User registered successfully'], 201);
         } catch (Exception $e) {

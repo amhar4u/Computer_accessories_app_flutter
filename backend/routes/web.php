@@ -3,7 +3,7 @@
 use App\Livewire\Admin\AdminDashboard;
 use App\Livewire\Login;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\AdminController;
+// use App\Http\Controllers\AdminController;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,8 +22,9 @@ use App\Http\Controllers\AdminController;
 
 Route::get('/',Login::class)->name('login');
 
-Route::middleware(['role:admin'])->group(function () {
-    Route::get('/admin', [AdminController::class, 'index']);
+Route::middleware(['auth','role:admin'])->group(function () {
+    // Route::get('/admin', [AdminController::class, 'index']);
+    Route::post('/logout', [Login::class, 'logout'])->name('logout');
     Route::get('/admin/dashboard', AdminDashboard::class)->name('admin.dashboard');
 });
 
