@@ -4,6 +4,17 @@
         .changing-text {
             animation: none; /* Remove the fade animation */
         }
+        .login-gradient-bg  {
+            /* background: linear-gradient(135deg, #0d6efd 0%, #ffffff 100%); */
+             /* background: linear-gradient(135deg, #0d6efd 0%, #8650dd 50%, #ffffff 100%); */
+             /* background: linear-gradient(135deg, #0d6efd 0%, #5434d6 100%); */
+            /* Alternative blue combinations you might like: */
+            background: linear-gradient(135deg, #0d6efd 0%, #0099ff 100%);  // Bootstrap blue to light blue
+            /* background: linear-gradient(135deg, #1a237e 0%, #4723D9 100%);  // Dark blue to purple-blue */
+            /* background: linear-gradient(135deg, #2196f3 0%, #0d47a1 100%);  // Material blue gradient */
+            
+           
+        }
     </style>
     @endpush
     <div class="container-fluid overflow-auto p-0 vh-100 ">
@@ -54,7 +65,8 @@
                         </div>
 
                         <!-- Login Form Section -->
-                        <div class="col-lg-6 col-12 bg-primary ">
+                        {{-- <div class="col-lg-6 col-12 bg-primary"> --}}
+                        <div class="col-lg-6 col-12 login-gradient-bg">
                             <div class="d-flex align-items-center justify-content-center min-vh-100 p-4">
                                 <div class="w-auto">
                                     <div class="card shadow-sm rounded-4 p-4">
