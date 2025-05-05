@@ -2,10 +2,10 @@
 
 namespace App\Livewire;
 
-use App\Traits\WithAuthentication;
 use Exception;
 use App\Models\User;
 use Livewire\Component;
+use App\Traits\LogoutTrait;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Layout;
 use Illuminate\Support\Facades\Auth;
@@ -14,7 +14,8 @@ use Illuminate\Support\Facades\Auth;
 #[Layout('components.layouts.app')]
 class Login extends Component
 {
-    use WithAuthentication;
+    use LogoutTrait;
+    
     public $email = '';
     public $password = '';
     public $remember = false;
@@ -82,7 +83,7 @@ class Login extends Component
 
     public function logout()
     {
-        $this->Logout();
+        $this->performLogout();
     }
 
     public function render()

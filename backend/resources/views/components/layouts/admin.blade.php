@@ -302,6 +302,8 @@
             }
         }
     </style>
+    <!-- In head section, add Livewire styles -->
+    @livewireStyles
 </head>
 <body>
     <!-- Sidebar Container -->
@@ -371,14 +373,10 @@
                     </div>
                 </li>
                 
-                
-                <!-- Logout -->
-                <li class="nav-item">
-                    <a href="{{ route('logout') }}" class="nav-link">
-                        <i class='bx bx-log-out nav-icon'></i>
-                        <span class="nav-text">Logout</span>
-                    </a>
-                </li>
+                <!-- Sidebar Logout Link -->
+                {{-- <li class="nav-item">
+                    <livewire:logout :icon="'bx bx-log-out nav-icon'" :text="'Logout'" />
+                </li> --}}
             </ul>
         </div>
     </div>
@@ -448,7 +446,10 @@
                         <li><a class="dropdown-item" href="#"><i class='bx bx-user-circle me-2'></i> My Profile</a></li>
                         <li><a class="dropdown-item" href="#"><i class='bx bx-cog me-2'></i> Account Settings</a></li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-danger" href="{{route('logout')}}"><i class='bx bx-log-out me-2'></i> Logout</a></li>
+                        <!-- Profile Dropdown Logout Link -->
+                        <li>
+                            <livewire:logout :icon="'bx bx-log-out me-2'" :text="'Logout'" />
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -527,5 +528,7 @@
             });
         });
     </script>
+    <!-- At end of body, add Livewire scripts -->
+    @livewireScripts
 </body>
 </html>
