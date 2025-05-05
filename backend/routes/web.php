@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\LogoutController;
+
 use App\Livewire\Login;
 use App\Livewire\Admin\Users;
 use App\Livewire\Admin\Products;
@@ -26,7 +26,6 @@ use App\Livewire\Admin\AdminDashboard;
 Route::get('/',Login::class)->name('login');
 
 Route::middleware(['auth','role:admin'])->group(function () {
-    Route::post('/logout', [LogoutController::class, 'logout'])->name('logout');
     Route::get('/admin/dashboard', AdminDashboard::class)->name('admin.dashboard');
     Route::get('/admin/products', Products::class)->name('admin.products');
     Route::get('/admin/users', Users::class)->name('admin.users');
